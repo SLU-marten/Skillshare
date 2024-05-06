@@ -1,0 +1,11 @@
+.reveal .slide-logo {
+    top: 0;
+    width: 10rem;
+    max-height: 10rem !important;
+}
+#title-slide .title {
+        font-size: 3.2em;
+      }
+.reveal pre.sourceCode code {
+    max-height: 700px;
+}

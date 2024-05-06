@@ -1,0 +1,575 @@
+---
+title: "Introduction to R Shiny"
+author: "By: Mårten Erlandsson"
+format: 
+  revealjs:
+    slide-number: true
+    logo: pics/slu_logo_webb.png
+    preview-links: auto
+    menu: true
+    self-contained: true
+    css: css/style.css
+    theme: blood
+---
+
+## What is R Shiny? {transition="convex"}
+
+::: columns
+::: {.column width="60%"}
+::: {.incremental}
+-   R package and web development framework
+-   Generates HTML code from R
+-   User can run R code using an interface instead of coding
+-   No prior knowledge in web development is needed 
+-   Shiny can do whatever R can do (if you allow it to)
+:::
+:::
+::: {.column width="40%"}
+![](pics/R_logo.png){style="display: block; margin-left: auto; margin-right: auto; " width="350"}
+![](pics/Shiny-logo.png)
+:::
+:::
+
+## Why learn R Shiny? {transition="convex"}
+::: {.incremental}
+-   Give your R functions a user interface (UI) 
+-   Collaboration with people who don't know R
+-   Presenting complex results from analyses
+-   Create a dashboard that automatically updates the data
+-   Speed up the trial and error approach
+-   It's not too hard to learn if you have some R knowledge
+-   You can suddenly be a web developer
+:::
+
+## Code structure of shiny {transition="convex" auto-animate="true"}
+
+-   **UI (Front end)**
+
+-   **Server (Back end)**
+
+-   **Run the app**
+
+-   **R files**
+
+    -   Single file (app.R)
+    
+    -   Multiple file (ui.R & server.R)
+
+## Code structure - UI {.smaller transition="convex" auto-animate="true"}
+::: columns
+::: {.column width="40%"}
+-   **UI (Front end)**
+
+    -   Define the layout of the app's user interface.
+
+    -   Create components for user input and output.
+:::
+::: {.column width="60%"}
+``` {.r code-line-numbers="1-16"}
+library(shiny)
+
+ui <- fluidPage(
+  titlePanel("Old Faithful Geyser Data"),
+  sidebarLayout(
+    sidebarPanel(
+      sliderInput(inputID = "bins", 
+                  label = "Number of bins:",
+                  min = 1, max = 50, value = 30
+      )
+    ),
+    mainPanel(
+      plotOutput(outputID = "distPlot")
+    )
+  )
+)
+```
+:::
+:::
+    
+## Code structure - Server {.smaller transition="convex" auto-animate="true"}
+::: columns
+::: {.column width="40%"}
+-   **UI (Front end)**
+
+    -   Define the layout of the app's user interface
+
+    -   Create components for user input and output
+
+-   **Server (Back end)**
+
+    -   Makes user input available to use in R scripts
+
+    -   Process data
+
+    -   Send outputs back to UI
+:::
+
+::: {.column width="60%"}
+``` {.r code-line-numbers="18-27"}
+library(shiny)
+
+ui <- fluidPage(
+  titlePanel("Old Faithful Geyser Data"),
+  sidebarLayout(
+    sidebarPanel(
+      sliderInput(inputID = "bins", 
+                  label = "Number of bins:",
+                  min = 1, max = 50, value = 30
+      )
+    ),
+    mainPanel(
+      plotOutput(outputID = "distPlot")
+    )
+  )
+)
+
+server <- function(input, output) {
+  output$distPlot <- renderPlot({
+    x <- faithful[, 2]
+    bins <- seq(min(x), max(x), length.out = input$bins + 1)
+    
+    hist(x, breaks = bins, col = 'darkgray', border = 'white',
+         xlab = 'Waiting time to next eruption (in mins)',
+         main = 'Histogram of waiting times')
+    })
+}
+```
+:::
+:::
+
+## Code structure - Run {.smaller transition="convex" auto-animate="true"}
+
+::: columns
+::: {.column width="40%"}
+-   **UI (Front end)**
+
+    -   Define the layout of the app's user interface.
+
+    -   Create components for user input and output.
+
+-   **Server (Back end)**
+
+    -   Makes user input available to use in R scripts
+
+    -   Process the data
+
+    -   Send outputs back to UI
+
+-   **Run the app**
+
+    -   Render to HTML
+:::
+::: {.column width="60%"}
+``` {.r code-line-numbers="29"}
+library(shiny)
+
+ui <- fluidPage(
+  titlePanel("Old Faithful Geyser Data"),
+  sidebarLayout(
+    sidebarPanel(
+      sliderInput(inputID = "bins", 
+                  label = "Number of bins:",
+                  min = 1, max = 50, value = 30
+      )
+    ),
+    mainPanel(
+      plotOutput(outputID = "distPlot")
+    )
+  )
+)
+
+server <- function(input, output) {
+  output$distPlot <- renderPlot({
+    x <- faithful[, 2]
+    bins <- seq(min(x), max(x), length.out = input$bins + 1)
+    
+    hist(x, breaks = bins, col = 'darkgray', border = 'white',
+         xlab = 'Waiting time to next eruption (in mins)',
+         main = 'Histogram of waiting times')
+    })
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+[Example app](https://martenerlandsson.shinyapps.io/app2/){preview-link="true"}
+:::
+:::
+
+## The logic of a shiny app {.smaller transition="convex" auto-animate="true"}
+
+::: columns
+::: {.column width="40%"}
+**Input and output objects**
+
+-   All inputs and outputs gets a unique ID
+
+:::
+::: {.column width="60%"}
+``` {.r code-line-numbers="7-10,13"}
+library(shiny)
+
+ui <- fluidPage(
+  titlePanel("Old Faithful Geyser Data"),
+  sidebarLayout(
+    sidebarPanel(
+      sliderInput(inputID = "bins", 
+                  label = "Number of bins:",
+                  min = 1, max = 50, value = 30
+      )
+    ),
+    mainPanel(
+      plotOutput(outputID = "distPlot")
+    )
+  )
+)
+
+server <- function(input, output) {
+  output$distPlot <- renderPlot({
+    x <- faithful[, 2]
+    bins <- seq(min(x), max(x), length.out = input$bins + 1)
+    
+    hist(x, breaks = bins, col = 'darkgray', border = 'white',
+         xlab = 'Waiting time to next eruption (in mins)',
+         main = 'Histogram of waiting times')
+    })
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+[Example app](https://martenerlandsson.shinyapps.io/app2/){preview-link="true"}
+:::
+:::
+
+## The logic of a shiny app {.smaller transition="convex" auto-animate="true"}
+
+::: columns
+::: {.column width="40%"}
+**Input and output objects**
+
+-   All inputs and outputs gets a unique ID
+-   All input and output values are stored in one input and one output object
+
+::: incremental
+-   The output is used together with a render function
+:::
+:::
+::: {.column width="60%"}
+``` {.r code-line-numbers="19-26"}
+library(shiny)
+
+ui <- fluidPage(
+  titlePanel("Old Faithful Geyser Data"),
+  sidebarLayout(
+    sidebarPanel(
+      sliderInput(inputID = "bins", 
+                  label = "Number of bins:",
+                  min = 1, max = 50, value = 30
+      )
+    ),
+    mainPanel(
+      plotOutput(outputID = "distPlot")
+    )
+  )
+)
+
+server <- function(input, output) {
+  output$distPlot <- renderPlot({
+    x <- faithful[, 2]
+    bins <- seq(min(x), max(x), length.out = input$bins + 1)
+    
+    hist(x, breaks = bins, col = 'darkgray', border = 'white',
+         xlab = 'Waiting time to next eruption (in mins)',
+         main = 'Histogram of waiting times')
+    })
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+[Example app](https://martenerlandsson.shinyapps.io/app2/){preview-link="true"}
+:::
+:::
+
+## Reactivity {.smaller transition="convex" auto-animate="true"}
+
+::: columns
+::: {.column width="40%"}
+::: {.fragment .fade-in fragment-index=1}
+-   x <- a + b
+:::
+::: {.fragment .fade-in fragment-index=2}
+-   When an input changes, all related outputs are automatically updated
+:::
+::: {.fragment .fade-in fragment-index=3}
+-   Shiny creates a graph of dependencies between components
+:::
+::: {.fragment .fade-in fragment-index=4}
+-   Reactive expressions
+:::
+:::
+::: {.column width="60%"}
+::: {.fragment .fade-in fragment-index=3}
+![](pics/reactivity.png)
+:::
+::: {.fragment .fade-in  fragment-index=5}
+``` {.r}
+output$distPlot <- renderPlot({
+  x <- faithful[, 2]
+  bins <- seq(min(x), max(x), length.out = input$bins + 1)
+    
+  hist(x, breaks = bins, col = 'darkgray', border = 'white',
+       xlab = 'Waiting time to next eruption (in mins)',
+       main = 'Histogram of waiting times')
+  })
+```
+:::
+:::
+:::
+
+## App layout in base shiny {.smaller transition="convex"}
+
+::: columns
+::: {.smaller .column width="30%"}
+**Page functions**
+
+-   fluidPage()
+
+    -   fluidRow()
+    -   column()
+-   fillPage()
+
+:::
+::: {.smaller .column width="30%"}
+**\ **
+
+-   fixedPage()
+-   navbarPage()
+
+    -   navbarMenu()
+
+:::
+
+::: {.column width="40%"}
+![](pics/layout.png)
+:::
+:::
+::: {.fragment .fade-in}
+::: columns
+::: {.smaller .column width="30%"}
+**Layout functions**
+
+-   sidebarLayout()
+-   splitLayout()
+-   verticalLayout()
+-   flowLayout()
+
+:::
+
+::: {.column width="60%"}
+![](pics/layout2.png)
+:::
+:::
+:::
+
+## Advanced layouts {.smaller transition="convex"}
+
+::: columns
+::: {.column width="35%"}
+**Layout packages:**
+
+-   bs4Dash
+-   shinydashboard
+-   shinyMobile
+-   shiny.semantic
+:::
+::: {.column width="35%"}
+::: {.fragment .fade-in}
+**Custom theming**
+
+-   bslib
+-   fresh
+-   [shinythemes](https://shiny.posit.co/r/gallery/application-layout/shiny-theme-selector/){preview-link="true"}
+-   CSS
+:::
+:::
+
+::: {.column width="30%"}
+::: {.fragment .fade-in}
+**Shiny UI Editor**
+
+[![](pics/shinyUI.jpg)](https://rstudio.github.io/shinyuieditor/live-demo/){preview-link="true"}
+:::
+:::
+:::
+
+::: {.fragment .fade-in}
+**Further reading:**
+[https://www.appsilon.com/post/shiny-application-layouts](https://www.appsilon.com/post/shiny-application-layouts){target="_blank"}
+
+:::
+
+## Input components {.smaller transition="convex"}
+
+::: columns
+::: {.column width="35%"}
+-   actionButton()
+-   checkboxInput()
+
+    -   checkboxGroupInput()
+-   dateInput()
+
+    -   dateRangeInput()
+-   fileInput()
+-   numericInput()
+-   radioButtons()
+-   selectInput()
+-   sliderInput()
+-   textInput()
+:::
+::: {.column width="65%"}
+[![](pics/Widgets.png){height="400"}](https://shiny.posit.co/r/gallery/widgets/widget-gallery/){preview-link="true"}
+
+[https://shiny.posit.co/r/gallery/widgets/widget-gallery/](https://shiny.posit.co/r/gallery/widgets/widget-gallery/){target="_blank"}
+:::
+:::
+
+## Output components {transition="convex"}
+
+:::: {.columns}
+::: {.column width="50%"}
+| Output               | Render            |
+|----------------------|-------------------|
+| textOutput()         | renderText()      |
+| verbatimTextOutput() | renderPrint()     |
+| tableOutput()        | renderTable()     |
+| plotOutput()         | renderPlot()      |
+| uiOutput()           | renderUI()        |
+| imageOutput()        | renderImage()     |
+|                      |                   |
+:::
+::: {.column width="50%"}
+:::
+:::
+::: {.notes .smaller}
+Here is a list of the output components that's included in the shiny package.
+
+And to the right is their corresponding render functions that's used in the server side of the app
+:::
+
+## More widget packages {.smaller transition="convex"}
+
+::: columns
+::: {.column width="50%"}
+**Widget packages:**
+
+-   [ShinyWidgets](https://shinyapps.dreamrs.fr/shinyWidgets/){preview-link="true"}
+-   shinyBS
+-   bsPlus
+-   Many more...
+:::
+::: {.column width="50%"}
+::: {.fragment .fade-in fragment-index=1}
+**Output interactivity**
+
+-   Leaflet
+-   DT
+-   Plotly
+-   Highcharter
+-   shinyjs
+:::
+:::
+:::
+::: columns
+::: {.column width="50%"}
+![](pics/widgets.jpg){height="200"}
+:::
+::: {.column width="50%"}
+::: {.fragment .fade-in fragment-index=1}
+![](pics/interactivity.jpg){height="200"}
+:::
+:::
+:::
+
+## Share an app {.smaller transition="convex"}
+
+::: columns
+::: {.column width="50%"}
+::: incremental
+-   Local project
+-   Run from Github
+-   Shinyapps.io
+-   Private server or cloud server
+
+    -   shiny server
+
+    -   shinyProxy
+-   Wasm -- webR
+
+    -   [www.nature.com/articles/d41586-024-00725-1](https://www.nature.com/articles/d41586-024-00725-1){target="_blank"}
+
+    -   [www.youtube.com/watch?v=6y2FnAugP8E](https://www.youtube.com/watch?v=6y2FnAugP8E){target="_blank"}
+:::
+:::
+
+::: {.column width="50%"}
+![](pics/shinyserver.jpg)
+:::
+:::
+
+## Showcase {.smaller transition="convex"}
+
+**Official apps**
+
+[https://shiny.posit.co/r/gallery/](https://shiny.posit.co/r/gallery/){preview-link="true"}
+
+. . .
+
+[**Some of my apps**]{style="margin-bottom: 0"}
+
+::: columns
+::: {.column width="50%"}
+Length distribution
+
+[![](pics/App_length.jpg){style="margin-top: 0px; margin-bottom: 0px;" fig-align="left" height="150"}](https://martenerlandsson.shinyapps.io/lngdfrdelning/){preview-link="true"}
+
+WioSymphony
+
+[![](pics/App_wio.jpg){style="margin-top: 0px; margin-bottom: 0px;" fig-align="left" height="150"}](https://martenerlandsson.shinyapps.io/map_explo/){preview-link="true"}
+:::
+
+::: {.column width="50%"}
+Eco
+
+[![](pics/App_eco.jpg){style="margin-top: 0px; margin-bottom: 0px;" fig-align="left" height="150"}](https://martenerlandsson.shinyapps.io/IntEko/){preview-link="true"}
+
+Bycatch risk
+
+[![](pics/App_bycatch.jpg){style="margin-top: 0px; margin-bottom: 0px;" fig-align="left" height="150"}]
+:::
+:::
+
+## Resources {.smaller transition="convex"}
+
+**Shiny extensions**
+
+[https://github.com/nanxstats/awesome-shiny-extensions](https://github.com/nanxstats/awesome-shiny-extensions){target="_blank"}
+
+**Course**
+
+[https://shiny.posit.co/r/getstarted/shiny-basics/lesson1/index.html](https://shiny.posit.co/r/getstarted/shiny-basics/lesson1/index.html){preview-link="true"}
+
+**Video**
+
+[https://laderast.github.io/edu/2021-03-20-a-gradual-introduction-to-shiny/](https://laderast.github.io/edu/2021-03-20-a-gradual-introduction-to-shiny/){preview-link="true"}
+
+**Books**
+
+[https://mastering-shiny.org/index.html](https://mastering-shiny.org/index.html){preview-link="true"}
+
+[https://engineering-shiny.org/](https://engineering-shiny.org/){preview-link="true"}
+
+[https://unleash-shiny.rinterface.com/](https://unleash-shiny.rinterface.com/){preview-link="true"}
+
+[https://book.javascript-for-r.com/](https://book.javascript-for-r.com/){preview-link="true"}
