@@ -11,7 +11,7 @@ sd <- SharedData$new(quakes)
 ui <- navbarPage(
   title = "Skillshare",
   theme = shinytheme("cerulean"),
-  tabPanel(title = "Demo data", 
+  tabPanel(title = "Demo", 
            sidebarLayout(
              sidebarPanel(
                sliderInput("bins",
@@ -86,7 +86,7 @@ server <- function(input, output, session) {
 
   
   #### ESQUISSER ####
-  data_r <- reactiveValues(data = iris, name = "iris")
+  data_r <- reactiveValues(data = iris)
   
   results <- esquisse_server(
     id = "esquisse",

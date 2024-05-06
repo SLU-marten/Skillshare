@@ -85,15 +85,15 @@ ui <- fluidPage(
 ```
 :::
 :::
-    
+
 ## Code structure - Server {.smaller transition="convex" auto-animate="true"}
 ::: columns
 ::: {.column width="40%"}
 -   **UI (Front end)**
 
-    -   Define the layout of the app's user interface
+    -   Define the layout of the app's user interface.
 
-    -   Create components for user input and output
+    -   Create components for user input and output.
 
 -   **Server (Back end)**
 
@@ -151,7 +151,7 @@ server <- function(input, output) {
 
     -   Makes user input available to use in R scripts
 
-    -   Process the data
+    -   Process data
 
     -   Send outputs back to UI
 
@@ -338,13 +338,13 @@ output$distPlot <- renderPlot({
 
     -   fluidRow()
     -   column()
--   fillPage()
+-   fixedPage()
 
 :::
 ::: {.smaller .column width="30%"}
 **\ **
 
--   fixedPage()
+-   fillPage()
 -   navbarPage()
 
     -   navbarMenu()
@@ -451,11 +451,6 @@ output$distPlot <- renderPlot({
 :::
 ::: {.column width="50%"}
 :::
-:::
-::: {.notes .smaller}
-Here is a list of the output components that's included in the shiny package.
-
-And to the right is their corresponding render functions that's used in the server side of the app
 :::
 
 ## More widget packages {.smaller transition="convex"}
@@ -574,3 +569,4 @@ Bycatch risk
 [https://unleash-shiny.rinterface.com/](https://unleash-shiny.rinterface.com/){preview-link="true"}
 
 [https://book.javascript-for-r.com/](https://book.javascript-for-r.com/){preview-link="true"}
+
