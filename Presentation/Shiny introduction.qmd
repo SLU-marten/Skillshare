@@ -546,7 +546,7 @@ Eco
 
 Bycatch risk
 
-[![](pics/App_bycatch.jpg){style="margin-top: 0px; margin-bottom: 0px;" fig-align="left" height="150"}]
+![](pics/App_bycatch.jpg){style="margin-top: 0px; margin-bottom: 0px;" fig-align="left" height="150"}
 :::
 :::
 
