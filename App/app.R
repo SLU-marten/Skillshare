@@ -3,66 +3,89 @@ library(crosstalk)
 library(d3scatter)
 library(DT)
 library(leaflet)
-library(ggplot2)
 library(esquisse)
+library(shinythemes)
 
-quakes$depth2 <- c("shallow", "mid", "deep")[cut(quakes$depth, 3, labels = F)]
+sd <- SharedData$new(quakes)
 
-ui <- fluidPage(
-  tabsetPanel(   
-    tabPanel(title = "Load data", 
-    ),
-    tabPanel(title = "Crosstalk",
-             fluidRow(
-               column(6, d3scatterOutput("scatter1")),
-               column(6, plotOutput("plot1"))
+ui <- navbarPage(
+  title = "Skillshare",
+  theme = shinytheme("cerulean"),
+  tabPanel(title = "Demo data", 
+           sidebarLayout(
+             sidebarPanel(
+               sliderInput("bins",
+                           "Number of bins:",
+                           min = 1,
+                           max = 50,
+                           value = 30)
              ),
-             fluidRow(
-               column(6, leafletOutput("map1")),
-               column(6, DTOutput("table1"))
+             
+             # Show a plot of the generated distribution
+             mainPanel(
+               plotOutput("distPlot")
              )
-    ),
-    tabPanel(title = "Esquisser", 
-             fluidRow(
-               column(8, esquisse_ui(id = "esquisse", header = FALSE)),
-               column(4, htmlOutput("code"))
-             )
-    )
+           )
+  ),
+  tabPanel(title = "Crosstalk",
+           column(3,
+                  filter_slider("mag", "Magnitude", sd, column=~mag, step=0.1),
+                  filter_slider("depth", "Depth", sd, column=~depth, step=10),
+                  filter_slider("stations", "Stations", sd, column=~stations, step=10)
+           ),
+           column(9,
+                  fluidRow(
+                    column(6, d3scatterOutput("scatter1")), 
+                    column(6, leafletOutput("map1")),
+                  ),
+                  fluidRow(
+                    column(12, DTOutput("table1"))
+                  )
+           )
+  ),
+  tabPanel(title = "Esquisser", 
+           fluidRow(
+             column(8, esquisse_ui(id = "esquisse", header = FALSE)),
+             column(4, htmlOutput("code"))
+           )
   )
 )
 
 server <- function(input, output, session) {
   
+  #### DEMO ####
+  output$distPlot <- renderPlot({
+    # generate bins based on input$bins from ui.R
+    x    <- faithful[, 2]
+    bins <- seq(min(x), max(x), length.out = input$bins + 1)
+    
+    # draw the histogram with the specified number of bins
+    hist(x, breaks = bins, col = 'darkgray', border = 'white',
+         xlab = 'Waiting time to next eruption (in mins)',
+         main = 'Histogram of waiting times')
+  })
+  
+  
+  #### CROSSTALK ####
   output$scatter1 <- renderD3scatter({
     d3scatter(sd, ~mag, ~stations, width = "100%")
   })
-  
-  sd <- SharedData$new(quakes[1:50,])
-  
-  df <- debounce(reactive(sd$data(withSelection = TRUE)), 200)
-  
-  output$plot1 <- renderPlot({
-    ggplot(df(), aes(depth2, fill = crosstalk::selection_factor(selected_))) +
-      geom_bar(stat = "count") +
-      crosstalk::scale_fill_selection("#555555", "#ff0000") +
-      theme_classic()
-  })
-  
+
   output$map1 <- renderLeaflet({
     leaflet(sd) |> 
       addProviderTiles(providers$CartoDB.Positron) |> 
-      addCircleMarkers(~long, ~lat, weight = 1, radius = 5, color = "black", fillColor = "red", fillOpacity = 1)
+      addCircleMarkers(~long, ~lat,
+                       weight = 1, radius = 6, 
+                       color = "black", fillColor = "red",
+                       fillOpacity = 1)
   })
   
   output$table1 <- renderDT({
     datatable(sd)
-  }, 
-  server=FALSE)
+  }, server = FALSE)
+
   
-  observeEvent(input$hej, {
-    browser()
-  })
-  
+  #### ESQUISSER ####
   data_r <- reactiveValues(data = iris, name = "iris")
   
   results <- esquisse_server(

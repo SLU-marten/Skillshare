@@ -477,6 +477,7 @@ And to the right is their corresponding render functions that's used in the serv
 -   DT
 -   Plotly
 -   Highcharter
+-   Crosstalk
 -   shinyjs
 :::
 :::
